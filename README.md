@@ -1,4 +1,4 @@
-# Plan-Spare-Parts-Lib-PSPLib
+# Plan Spare Parts Lib - PSPLib
 
 
 ## License
