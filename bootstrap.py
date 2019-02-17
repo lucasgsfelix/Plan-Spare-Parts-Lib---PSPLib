@@ -1,4 +1,6 @@
 import numpy as np
+import random
+import math
 
 class bootstrap(object):
 
@@ -14,10 +16,14 @@ class bootstrap(object):
 		row = self.data ### the receive data is threated as a row 
 		leadTime = np.sum(row)
 		transitionBoolArray = self.probabilityTransition(row)
-		probabilityMatrix = self.probabilityMatrixCalc(transitionArray)
+		probabilityMatrix = self.probabilityMatrixCalc(transitionBoolArray)
 		probabilityMatrix = np.matmul(probabilityMatrix, probabilityMatrix) ### responsible for multiple the matrixs
-		self.transitionCalc(transitionBoolArray, probabilityMatrix)
-
+		transitionValue = self.transitionCalc(transitionBoolArray, probabilityMatrix)
+		if transitionValue == 0:
+			return 0
+		else:
+			choosenValue = self.notNullCalc(row)
+			return self.JitterCalc(choosenValue, row)
 
 	def probabilityTransition(self, row):
 
@@ -67,15 +73,63 @@ class bootstrap(object):
 
 	def transitionCalc(self, transitionBoolArray, probabilityMatrix):
 
-		pass
+		if transitionBoolArray.size <=2:
+			return transitionBoolArray[random.randint(0, transitionBoolArray.size-1)]
+		else:
+			auxSum = np.sum(transitionBoolArray) ## using this approach I avoid recalculation
+			if auxSum == 0:
+				return 0
+			elif auxSum == transitionBoolArray[transitionBoolArray.size-1]:
+				return 1
+			else:
+				if transitionBoolArray[transitionBoolArray.size-1] == 1:
+					aux = self.defineTransitionValue(probabilityMatrix[1][0], probabilityMatrix[1][1], transitionBoolArray.size)
+				else:
+					aux = self.defineTransitionValue(probabilityMatrix[0][0], probabilityMatrix[0][1], transitionBoolArray.size)
 
+			return transitionBoolArray[aux]
+
+	def defineTransitionValue(self, probabilityOne, probailityTwo, sizeBoolArray):
+
+		if probabilityOne == probailityTwo:
+			return random.randint(0, 1)
+		else:
+			aux = 0
+			cont = 0
+			while(aux!=1 and cont<sizeBoolArray):
+				aux = random.randint(0, sizeBoolArray-1)
+				cont = cont + 1
+			if cont == sizeBoolArray:
+				aux = random.randint(0, sizeBoolArray-1)
+
+			return aux
+
+	def notNullCalc(self, row):
+
+		row = row[row !=0] ### extracting values not equal to zero
+
+		return row[random.randint(0, row.size-1)]
+
+	def JitterCalc(self, choosenValue, row):
+
+		mean = np.mean(row[row!=0])
+		std = np.std(row[row!=0])
+		if std == 0:zValue = 0
+		else:zValue = (choosenValue-mean)/std
+		zValue = random.uniform(zValue*-1, zValue) ## example: -1 to 1
+		sValue = 1 + int(choosenValue+zValue*math.sqrt(choosenValue))
+		if sValue<0:
+			return choosenValue
+		else:
+			return sValue
 
 
 if __name__ == '__main__':
 	
+	random.seed()
 	row = np.array([0,1,2])
 	sis = bootstrap(data = row, percentil = 10, convergenceValue = 5)
-	sis.bootstrapMethod()
+	previsto = sis.bootstrapMethod()
 
 		
 
