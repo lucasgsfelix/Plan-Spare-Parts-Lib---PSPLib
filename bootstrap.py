@@ -11,9 +11,9 @@ class bootstrap(object):
 		self.convergenceValue = convergenceValue
 
 
-	def bootstrapMethod(self):
+	def bootstrapMethod(self, row):
 
-		row = self.data ### the receive data is threated as a row 
+		#row = self.data ### the receive data is threated as a row 
 		leadTime = np.sum(row)
 		transitionBoolArray = self.probabilityTransition(row)
 		probabilityMatrix = self.probabilityMatrixCalc(transitionBoolArray)
@@ -123,13 +123,13 @@ class bootstrap(object):
 		else:
 			return sValue
 
-
+'''
 if __name__ == '__main__':
 	
 	random.seed()
 	row = np.array([0,1,2])
 	sis = bootstrap(data = row, percentil = 10, convergenceValue = 5)
-	previsto = sis.bootstrapMethod()
+	previsto = sis.bootstrapMethod(row) '''
 
 		
 
