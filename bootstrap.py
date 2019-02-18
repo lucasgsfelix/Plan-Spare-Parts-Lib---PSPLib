@@ -2,33 +2,51 @@ import numpy as np
 import random
 import math
 
-class bootstrap(object):
+class Bootstrap(object):
 
-	def __init__(self, data, percentil, convergenceValue): 
+	def __init__(self, percentile, convergenceValue): 
 
-		self.data = data
-		self.percentil = percentil
+		self.percentile = percentile
 		self.convergenceValue = convergenceValue
 
+	def bootstrapInit(self, row):
 
-	def bootstrapMethod(self, row):
+		''' This function will be responsible to initialize the bootstrap method calling it
+			will return the value of forecast value giver a percentile
+		'''
+		self.row = row
+		if not str(type(self.row)) ==  "<class 'numpy.ndarray'>": ## casting the value
+			self.row = np.array(row)
+		
+		random.seed()
+		forecastValues = np.zeros(self.convergenceValue)
+		for i in range(0, self.convergenceValue):
+			forecastValues[i] = self.bootstrapMethod() ## calling the method
+
+		forecastValues = np.sort(forecastValues)
+		percentilePosition = int(np.percentile(a=forecastValues, q=self.percentile)) ## this part is not working right
+		print(forecastValues, percentilePosition, forecastValues.size)
+
+		return forecastValues[percentilePosition] 
+
+	def bootstrapMethod(self):
 
 		#row = self.data ### the receive data is threated as a row 
-		leadTime = np.sum(row)
-		transitionBoolArray = self.probabilityTransition(row)
+		leadTime = np.sum(self.row)
+		transitionBoolArray = self.probabilityTransition()
 		probabilityMatrix = self.probabilityMatrixCalc(transitionBoolArray)
 		probabilityMatrix = np.matmul(probabilityMatrix, probabilityMatrix) ### responsible for multiple the matrixs
 		transitionValue = self.transitionCalc(transitionBoolArray, probabilityMatrix)
 		if transitionValue == 0:
 			return 0
 		else:
-			choosenValue = self.notNullCalc(row)
-			return self.JitterCalc(choosenValue, row)
+			choosenValue = self.notNullCalc()
+			return self.JitterCalc(choosenValue)
 
-	def probabilityTransition(self, row):
+	def probabilityTransition(self):
 
-		transitionArray = np.zeros(row.size) ### this will be a one dimension array 
-		for i, element in enumerate(row):
+		transitionArray = np.zeros(self.row.size) ### this will be a one dimension array 
+		for i, element in enumerate(self.row):
 			if element > 0:
 				transitionArray[i] = 1
 
@@ -104,16 +122,16 @@ class bootstrap(object):
 
 			return aux
 
-	def notNullCalc(self, row):
+	def notNullCalc(self):
 
-		row = row[row !=0] ### extracting values not equal to zero
+		self.row = self.row[self.row !=0] ### extracting values not equal to zero
 
-		return row[random.randint(0, row.size-1)]
+		return self.row[random.randint(0, self.row.size-1)]
 
-	def JitterCalc(self, choosenValue, row):
+	def JitterCalc(self, choosenValue):
 
-		mean = np.mean(row[row!=0])
-		std = np.std(row[row!=0])
+		mean = np.mean(self.row[self.row!=0])
+		std = np.std(self.row[self.row!=0])
 		if std == 0:zValue = 0
 		else:zValue = (choosenValue-mean)/std
 		zValue = random.uniform(zValue*-1, zValue) ## example: -1 to 1
@@ -128,8 +146,8 @@ if __name__ == '__main__':
 	
 	random.seed()
 	row = np.array([0,1,2])
-	sis = bootstrap(data = row, percentil = 10, convergenceValue = 5)
-	previsto = sis.bootstrapMethod(row) '''
+	sis = Bootstrap(row = row, percentile = 0, convergenceValue = 5)
+	previsto = sis.bootstrapInit()'''
 
 		
 
