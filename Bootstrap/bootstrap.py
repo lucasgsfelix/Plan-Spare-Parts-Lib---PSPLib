@@ -1,16 +1,14 @@
-import numpy as np
-import random
 import math
 import multiprocessing
-import time
-import pandas as pd
+import random
+import numpy as np
 class Bootstrap(object):
 
-	def __init__(self, percentile, convergenceValue, numberOfThreads): 
+	def __init__(self, percentile, convergence_value, number_threads): 
 
 		self.percentile = percentile
-		self.convergenceValue = convergenceValue
-		self.numberOfThreads = numberOfThreads
+		self.convergence_value = convergence_value
+		self.number_threads = number_threads
 
 
 	def bootstrapInit(self, row):
@@ -25,132 +23,131 @@ class Bootstrap(object):
 		
 
 		random.seed()
-		forecastValues = np.zeros(self.convergenceValue)
-		if self.numberOfThreads == 0 or self.numberOfThreads is None:
-			map(self.bootstrapMethod, range(self.convergenceValue))
+		forecasted_values = np.zeros(self.convergence_value)
+		if self.number_threads == 0 or self.number_threads is None:
+			map(self.bootstrap_method, range(self.convergence_value))
 		else: ### is not working right
-			pool = multiprocessing.Pool(self.numberOfThreads)
-			forecastValues = pool.map(self.bootstrapMethod, range(self.convergenceValue))
+			pool = multiprocessing.Pool(self.number_threads)
+			forecasted_values = pool.map(self.bootstrap_method, range(self.convergence_value))
 			pool.close()
 
-		forecastValues = np.sort(forecastValues)
-		percentilePosition = self.percentileCalc(forecastValues.size) ## this part is not working right
+		forecasted_values=np.sort(forecasted_values)
+		percentilePosition = self.percentile_calc(forecasted_values.size) ## this part is not working right
 	
 
-		return forecastValues[percentilePosition]
+		return forecasted_values[percentilePosition]
 
-	def percentileCalc(self, sizeOfArray):
+	def percentile_calc(self, size_of_array):
 
-		return int((self.percentile * (sizeOfArray+1))/100)
+		return int((self.percentile * (size_of_array+1))/100)
 
-	def bootstrapMethod(self, argVoid):
+	def bootstrap_method(self, arg_void):
 		#row = self.data ### the receive data is threated as a row 
-		leadTime = np.sum(self.row)
-		transitionBoolArray = self.probabilityTransition()
-		probabilityMatrix = self.probabilityMatrixCalc(transitionBoolArray)
-		probabilityMatrix = np.matmul(probabilityMatrix, probabilityMatrix) ### responsible for multiple the matrixs
-		transitionValue = self.transitionCalc(transitionBoolArray, probabilityMatrix)
+		transition_bool_array = self.probability_transition()
+		probability_matrix = self.probability_matrix_calc(transition_bool_array)
+		probability_matrix = np.matmul(probability_matrix, probability_matrix) ### responsible for multiple the matrixs
+		transitionValue = self.transition_calc(transition_bool_array, probability_matrix)
 		if transitionValue == 0:
 			return 0
 		else:
-			choosenValue = self.notNullCalc()
-			return self.JitterCalc(choosenValue)
+			choosen_value = self.not_null_calc()
+			return self.jitter_calc(choosen_value)
 
-	def probabilityTransition(self):
+	def probability_transition(self):
 
-		transitionArray = np.zeros(self.row.size) ### this will be a one dimension array 
+		transition_array = np.zeros(self.row.size) ### this will be a one dimension array 
 		for i, element in enumerate(self.row):
 			if element > 0:
-				transitionArray[i] = 1
+				transition_array[i] = 1
 
-		return transitionArray
+		return transition_array
 
-	def probabilityMatrixCalc(self, transitionArray):
+	def probability_matrix_calc(self, transition_array):
 
-		probabilityList = np.zeros(4)
+		probability_list = np.zeros(4)
 
-		for i in range(1, transitionArray.size):
+		for i in range(1, transition_array.size):
 
-			if transitionArray[i] == 0 and transitionArray[i-1] == 0 :
-				probabilityList[0] = probabilityList[0] + 1
-			elif transitionArray[i] == 1 and transitionArray[i-1] == 0:
-				probabilityList[1] = probabilityList[1] + 1
-			elif transitionArray[i] == 0 and transitionArray[i-1] == 1:
-				probabilityList[2] = probabilityList[2] + 1
-			elif  transitionArray[i] == 1 and transitionArray[i-1] ==1:
-				probabilityList[3] = probabilityList[3] + 1
+			if transition_array[i] == 0 and transition_array[i-1] == 0 :
+				probability_list[0] = probability_list[0] + 1
+			elif transition_array[i] == 1 and transition_array[i-1] == 0:
+				probability_list[1] = probability_list[1] + 1
+			elif transition_array[i] == 0 and transition_array[i-1] == 1:
+				probability_list[2] = probability_list[2] + 1
+			elif  transition_array[i] == 1 and transition_array[i-1] ==1:
+				probability_list[3] = probability_list[3] + 1
 
-		probabilityList = self.singleProbabilityCalc(probabilityList, 0, 1)
-		probabilityList = self.singleProbabilityCalc(probabilityList, 2, 3)
+		probability_list = self.single_probability_calc(probability_list, 0, 1)
+		probability_list = self.single_probability_calc(probability_list, 2, 3)
 
 		### Now I have to reshape the list in a way it transforms in a matrix
-		probabilityList = probabilityList.reshape((2,2))
+		probability_list = probability_list.reshape((2,2))
 	
-		return probabilityList
+		return probability_list
 
-	def singleProbabilityCalc(self, probabilityList, indexOne, indexTwo):
+	def single_probability_calc(self, probability_list, index_one, index_two):
 
-		probability = probabilityList[indexOne] + probabilityList[indexTwo]
+		probability = probability_list[index_one] + probability_list[index_two]
 
 		if probability != 0:
-			probabilityList[indexOne] = float(probabilityList[indexOne]/probability)
-			probabilityList[indexTwo] = float(probabilityList[indexTwo]/probability)
+			probability_list[index_one] = float(probability_list[index_one]/probability)
+			probability_list[index_two] = float(probability_list[index_two]/probability)
 
 		else:
-			probabilityList[indexOne] = 0
-			probabilityList[indexTwo] = 0
+			probability_list[index_one] = 0
+			probability_list[index_two] = 0
 
-		return probabilityList
+		return probability_list
 
-	def transitionCalc(self, transitionBoolArray, probabilityMatrix):
+	def transition_calc(self, transition_bool_array, probability_matrix):
 
-		if transitionBoolArray.size <=2:
-			return transitionBoolArray[random.randint(0, transitionBoolArray.size-1)]
+		if transition_bool_array.size <=2:
+			return transition_bool_array[random.randint(0, transition_bool_array.size-1)]
 		else:
-			auxSum = np.sum(transitionBoolArray) ## using this approach I avoid recalculation
+			auxSum = np.sum(transition_bool_array) ## using this approach I avoid recalculation
 			if auxSum == 0:
 				return 0
-			elif auxSum == transitionBoolArray[transitionBoolArray.size-1]:
+			elif auxSum == transition_bool_array[transition_bool_array.size-1]:
 				return 1
 			else:
-				if transitionBoolArray[transitionBoolArray.size-1] == 1:
-					aux = self.defineTransitionValue(probabilityMatrix[1][0], probabilityMatrix[1][1], transitionBoolArray.size)
+				if transition_bool_array[transition_bool_array.size-1] == 1:
+					aux = self.define_transition_value(probability_matrix[1][0], probability_matrix[1][1], transition_bool_array.size)
 				else:
-					aux = self.defineTransitionValue(probabilityMatrix[0][0], probabilityMatrix[0][1], transitionBoolArray.size)
+					aux = self.define_transition_value(probability_matrix[0][0], probability_matrix[0][1], transition_bool_array.size)
 
-			return transitionBoolArray[aux]
+			return transition_bool_array[aux]
 
-	def defineTransitionValue(self, probabilityOne, probailityTwo, sizeBoolArray):
+	def define_transition_value(self, probability_one, probability_two, size_bool_array):
 
-		if probabilityOne == probailityTwo:
+		if probability_one == probability_two:
 			return random.randint(0, 1)
 		else:
 			aux = 0
 			cont = 0
-			while(aux!=1 and cont<sizeBoolArray):
-				aux = random.randint(0, sizeBoolArray-1)
+			while(aux!=1 and cont<size_bool_array):
+				aux = random.randint(0, size_bool_array-1)
 				cont = cont + 1
-			if cont == sizeBoolArray:
-				aux = random.randint(0, sizeBoolArray-1)
+			if cont == size_bool_array:
+				aux = random.randint(0, size_bool_array-1)
 
 			return aux
 
-	def notNullCalc(self):
+	def not_null_calc(self):
 
 		self.row = self.row[self.row !=0] ### extracting values not equal to zero
 
 		return self.row[random.randint(0, self.row.size-1)]
 
-	def JitterCalc(self, choosenValue):
+	def jitter_calc(self, choosen_value):
 
-		mean = np.mean(self.row[self.row!=0])
-		std = np.std(self.row[self.row!=0])
-		if std == 0:zValue = 0
-		else:zValue = (choosenValue-mean)/std
-		zValue = random.uniform(zValue*-1, zValue) ## example: -1 to 1
-		sValue = 1 + int(choosenValue+zValue*math.sqrt(choosenValue))
-		if sValue<0:
-			return choosenValue
+		mean=np.mean(self.row[self.row!=0])
+		std=np.std(self.row[self.row!=0])
+		if std == 0:z_value = 0
+		else:z_value = (choosen_value-mean)/std
+		z_value = random.uniform(z_value*-1, z_value) ## example: -1 to 1
+		s_value = 1 + int(choosen_value+z_value*math.sqrt(choosen_value))
+		if s_value<0:
+			return choosen_value
 		else:
-			return sValue
+			return s_value
 
