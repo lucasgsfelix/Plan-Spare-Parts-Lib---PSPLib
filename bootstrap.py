@@ -9,6 +9,10 @@ class Bootstrap(object):
 		self.percentile = percentile
 		self.convergenceValue = convergenceValue
 
+	def percentileCalc(self, sizeOfArray):
+
+		return int((self.percentile * (sizeOfArray+1))/100)
+
 	def bootstrapInit(self, row):
 
 		''' This function will be responsible to initialize the bootstrap method calling it
@@ -24,8 +28,8 @@ class Bootstrap(object):
 			forecastValues[i] = self.bootstrapMethod() ## calling the method
 
 		forecastValues = np.sort(forecastValues)
-		percentilePosition = int(np.percentile(a=forecastValues, q=self.percentile)) ## this part is not working right
-		print(forecastValues, percentilePosition, forecastValues.size)
+		percentilePosition = self.percentileCalc(forecastValues.size) ## this part is not working right
+	
 
 		return forecastValues[percentilePosition] 
 

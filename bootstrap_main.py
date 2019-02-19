@@ -1,5 +1,6 @@
 import bootstrap
 import pandas as pd
+import numpy as np
 
 class Bootstrap_Main_Method(bootstrap.Bootstrap):
 
@@ -23,11 +24,10 @@ class Bootstrap_Main_Method(bootstrap.Bootstrap):
 	def bootstrapMain_init(self):
 
 		boot = bootstrap.Bootstrap(percentile = self.percentile, convergenceValue = self.convergenceValue)
-		for i in self.data.itertuples(): ### will iterate over each row
-			bootstrap.bootstrapInit(i)
-			exit()
-			
-
+		forecastMatrix = np.empty(shape = data.shape, dtype=np.float64)
+		for index_i, i in enumerate(self.data.itertuples()): ### will iterate over each row
+			for j in range(2, len(i)+1): ### pandas has his index, this way force me to initiate the cont in 2
+				forecastMatrix[index_i][j-2] = boot.bootstrapInit(i[0:j])
 
 
 if __name__ == '__main__':
@@ -36,7 +36,6 @@ if __name__ == '__main__':
 	data.head()
 	sis = Bootstrap_Main_Method(data = data, percentile = 10, convergenceValue = 10)
 	sis.bootstrapMain_init()
-
 
 
 
