@@ -88,7 +88,7 @@ class Bootstrap():
 			will return the value of forecast value giver a percentile
 		'''
 		self.row = row
-		if str(type(self.row)) != "<class 'numpy.ndarray'>": ## casting the value
+		if str(type(row)) != "<class 'numpy.ndarray'>": ## casting the value
 			self.row = np.array(row)
 		forecasted_values = np.zeros(self.convergence_value)
 		if self.number_threads == 0 or self.number_threads is None:
@@ -115,7 +115,8 @@ class Bootstrap():
 		if transition_value == 0:
 			return 0
 		choosen_value = self.not_null_calc()
-		return self.jitter_calc(choosen_value)
+		choosen_value = self.jitter_calc(choosen_value)
+		return choosen_value
 
 	def probability_transition(self):
 		'''Calculate a boolean array that will represent a transition array'''

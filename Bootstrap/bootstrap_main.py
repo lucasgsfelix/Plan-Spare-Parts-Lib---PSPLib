@@ -22,7 +22,7 @@ class BootstrapMainMethod(bootstrap.Bootstrap):
 		forecast_matrix = np.empty(shape=self.data.shape, dtype=np.float64)
 		for index_i, i in enumerate(self.data.itertuples()): ### will iterate over each row
 			for j in range(2, len(i)+1): ### pandas has his index, this way force me to initiate the cont in 2
-				forecast_matrix[index_i][j-2] = boot.bootstrap_main_init(i[0:j])
+				forecast_matrix[index_i][j-2] = boot.bootstrap_main_init(i[1:j])
 
 
 if __name__ == '__main__':
