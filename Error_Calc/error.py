@@ -21,7 +21,18 @@ class Error():
 			self.round_value = round_value
 
 	def mase_error(self):
-		pass
+		"""Mase Error."""
+		diff_real_real = 0
+		for i in range(1, len(self.real_values)):
+			diff_real_real = diff_real_real + math.fabs(self.real_values[i]-self.real_values[i-1])
+		diff_real_forecasted = np.array(map(sub, self.real_values, self.forecasted_values))
+		diff_real_forecasted = np.array(map(math.abs, diff_real_forecasted)) # absolute values
+		sum_values = np.sum(diff_real_forecasted)
+
+		aux_x = (diff_real_real/(real_values.size-1))
+		aux_y = (diff_real_forecasted)/(real_values.size-1)
+
+		return (aux_y/(real_values.size-1))
 
 	def absolute_mean_error(self):
 		"""Absolute Mean Error."""
@@ -50,7 +61,7 @@ class Error():
 
 	def mean_squared_error(self):
 		"""Mean Squared Error."""
-		pass
+		return math.sqrt(self.quadratic_mean_error())
 
 	def absolute_percentage_error(self):
 		"""Absolute Percentage Error."""
