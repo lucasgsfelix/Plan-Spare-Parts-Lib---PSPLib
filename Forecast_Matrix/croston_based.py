@@ -1,27 +1,33 @@
 """Croston Based algorithms"""
 import numpy as np
 import pandas as pd
+import bootstrap
 import error
 class Croston_Based():
 
 	alfa, data = 0,0 ## class atributes
 	choosen_algorithm = 'croston'
 	alfa_condition = 'fix'
+	bootstrap_call = False
 
-	def croston_main(alfa_condition, alfa, data, choosen_algorithm):
+	def croston_main(alfa_condition, alfa, data, choosen_algorithm, bootstrap_call):
 		
-		alfa = self.alfa ## range 0 ~ 1
-		data = self.data ## pandas dataframe
-		alfa_condition = self.alfa_condition ## fix ou dynamic
-		choosen_algorithm = self.choosen_algorithm ## sba or croston
+		self.alfa = alfa ## range 0 ~ 1
+		self.data = data ## pandas dataframe
+		self.alfa_condition = alfa_condition ## fix ou dynamic
+		self.choosen_algorithm = choosen_algorithm ## sba or croston
+		self.bootstrap_call = bootstrap_call ## if True, call bootstrap
 		forecast_matriz = np.zeros(shape=data.shape, dtype=np.float64)
 		for i in enumerate(data.itertuples()):
 			value_q, previous_p, actual_p, previous_z, actual_z = 0,0,0,0,0
 			for j in range(0, len(i)): 
 				if data[i][j] == 0:
-					actual_p = previous_p
-					actual_z = previous_z
-					value_q = value_q + 1
+					if bootstrap_call == True:
+						pass
+					else:
+						previous_p = actual_p
+						previous_z = actual_z
+						value_q = value_q + 1
 				else:
 					forecast_matriz[i][j] = self.calculate_method(data[i][j], alfa, value_q)
 					if self.alfa_condition.lower() == 'dynamic':
