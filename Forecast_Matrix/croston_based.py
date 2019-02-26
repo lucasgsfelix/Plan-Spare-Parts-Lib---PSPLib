@@ -15,13 +15,21 @@ class Croston_Based():
 	bootstrap_call = False
 
 	def croston_main(alfa_condition, alfa, data, choosen_algorithm, bootstrap_call, convergence_value, percentile):
-		"""Call and defines methods"""
-		self.alfa = alfa ## range 0 ~ 1
-		self.data = data ## pandas dataframe
-		self.alfa_condition = alfa_condition ## fix ou dynamic
-		self.choosen_algorithm = choosen_algorithm ## sba, croston, exponential
-		self.bootstrap_call = bootstrap_call ## if True, call bootstrap
-		self.convergence_value = convergence_value ## convergence value for the bootstrap method
+		"""Call and defines methods
+
+			alfa_condition: most be in a range of 0 to 1
+			data: the data most be a pandas dataframe
+			choosen_algorithm: sba, croston or exponential
+			bootstrap_call: if true call boostrap, but does not work if exponential
+			convergence_value: the value of convergence for the bootstrap method, most be in greater than 0
+			percentile: defines the percentile for the bootstrap method, most be between 0 ~ 100
+		"""
+		self.alfa = alfa
+		self.data = data
+		self.alfa_condition = alfa_condition
+		self.choosen_algorithm = choosen_algorithm
+		self.bootstrap_call = bootstrap_call
+		self.convergence_value = convergence_value
 		self.percentile = percentile
 		forecast_matriz = np.zeros(shape=data.shape, dtype=np.float64)
 		
