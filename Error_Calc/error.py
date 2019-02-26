@@ -3,6 +3,10 @@ import math
 from operator import sub
 import numpy as np
 
+def simple_error(real_values, forecasted_values):
+	"""Simple dif error"""
+	return real_values-forecasted_values
+
 class Error():
 	"""This class will be responsible to calculate the error of the forecast methods."""
 
