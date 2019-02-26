@@ -29,7 +29,7 @@ if __name__ == '__main__':
 	INICIO = time.time()
 	DATA = pd.read_table("demanda.txt", delimiter='\t')
 	DATA.head()
-	SIS = BootstrapMainMethod(data=DATA, percentile=10, convergence_value=10)
+	SIS = BootstrapMainMethod(data=DATA, convergence_value=10, number_threads=0)
 	SIS.bootstrap_data_method_init()
 	FIM = time.time()
 	print(FIM-INICIO)

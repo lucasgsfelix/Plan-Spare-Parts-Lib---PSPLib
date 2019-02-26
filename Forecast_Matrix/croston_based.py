@@ -1,29 +1,32 @@
 """Croston Based algorithms"""
 import numpy as np
 import pandas as pd
-import bootstrap
-import error
+from Error_Calc import error
+from Bootstrap import bootstrap
 class Croston_Based():
 
-	alfa, data = 0,0 ## class atributes
-	choosen_algorithm = 'croston'
-	alfa_condition = 'fix'
+	alfa, data, convergence_value, percentile = 0,0,0,0 ## class atributes
+	choosen_algorithm, alfa_condition = 'croston', 'fix' ##
 	bootstrap_call = False
 
-	def croston_main(alfa_condition, alfa, data, choosen_algorithm, bootstrap_call):
+	def croston_main(alfa_condition, alfa, data, choosen_algorithm, bootstrap_call, convergence_value, percentile):
 		
 		self.alfa = alfa ## range 0 ~ 1
 		self.data = data ## pandas dataframe
 		self.alfa_condition = alfa_condition ## fix ou dynamic
 		self.choosen_algorithm = choosen_algorithm ## sba or croston
 		self.bootstrap_call = bootstrap_call ## if True, call bootstrap
+		self.convergence_value = convergence_value ## convergence value for the bootstrap method
+		self.percentile = percentile
 		forecast_matriz = np.zeros(shape=data.shape, dtype=np.float64)
+		if bootstrap_call == True: ### instatiating boostrap object
+			bootstrap_obj = bootstrap.Bootstrap(percentile=percentile, convergence_value=self.convergence_value, number_threads=0)
 		for i in enumerate(data.itertuples()):
 			value_q, previous_p, actual_p, previous_z, actual_z = 0,0,0,0,0
 			for j in range(0, len(i)): 
 				if data[i][j] == 0:
 					if bootstrap_call == True:
-						pass
+						bootstrap_obj.bootstrap_main_init(row = data[i][0:j])
 					else:
 						previous_p = actual_p
 						previous_z = actual_z
