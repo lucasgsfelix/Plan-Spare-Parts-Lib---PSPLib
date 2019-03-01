@@ -7,7 +7,6 @@ import random
 import numpy as np
 
 
-
 def single_probability_calc(probability_list, index_one, index_two):
 	'''Calculates the probability of each list, in this fuction is necessary to pass the position of the given list'''
 	probability = probability_list[index_one] + probability_list[index_two]
@@ -74,20 +73,24 @@ def transition_calc(transition_bool_array, probability_matrix):
 class Bootstrap():
 	'''Main bootstrap class, where is implemented all the necessary methods'''
 	row = 0
-	def __init__(self, percentile, convergence_value, number_threads):
+	percentile_type = 'static'
+	def __init__(self, convergence_value, number_threads):
 		'''Initialization method'''
 		random.seed()
-		self.percentile = percentile
 		self.convergence_value = convergence_value
 		self.number_threads = number_threads
 
 
-	def bootstrap_main_init(self, row):
+	def bootstrap_main_init(self, row, percentile_type, percentile, last_value):
 
 		''' This function will be responsible to initialize the bootstrap method calling it
-			will return the value of forecast value giver a percentile
+			will return the value of forecast value given a percentile and the percentile
+
+			last value is the value that we are trying to predict
 		'''
+		self.percentile_type = percentile_type
 		self.row = row
+		self.percentile = percentile
 		if str(type(row)) != "<class 'numpy.ndarray'>": ## casting the value
 			self.row = np.array(row)
 		forecasted_values = np.zeros(self.convergence_value)
@@ -100,7 +103,36 @@ class Bootstrap():
 			pool.close()
 		forecasted_values = np.sort(forecasted_values)
 		percentile_position = self.percentile_calc(forecasted_values.size) ## this part is not working right
-		return forecasted_values[percentile_position]
+
+		if percentile_type == 'static':		
+			return forecasted_values[percentile_position], self.percentile
+		else:# is dynamic
+			best_percentile = self.best_percentile_calc(forecasted_values, last_value)
+			return forecasted_values[percentile_position], best_percentile
+
+
+
+
+	def best_percentile_calc(self, forecasted_values, last_value):
+		"""Calculing the best percentile position for the next round, dynamic percentile type"""
+		self.percentile, best_last_value, percentile_position_best = 0, 0, 0
+		
+		while(percentile<=100):
+			percentile_position = self.percentile_calc(forecasted_values.size)
+			best_value = math.fabs(last_value - forecasted_values[percentile_position])
+			
+			if self.percentile == 0:
+				best_last_value = best_value
+			else:
+				if best_last_value > best_value:
+					best_last_value = best_value
+					percentile_position_best = percentile_position
+					if best_value == 0: # the first best percentile
+						break
+
+			self.percentile = self.percentile + 10
+
+		return percentile_position_best
 
 	def percentile_calc(self, size_of_array):
 		'''Responsible to return the position in a array of a giver percentile'''
