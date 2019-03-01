@@ -1,8 +1,10 @@
 """Croston Based algorithms and Exponential"""
+import sys
 import numpy as np
 import pandas as pd
-from Error_Calc import error
-from Bootstrap import bootstrap
+sys.path.insert(0, '..')
+import Bootstrap
+
 
 def calculate_method_exponential(alfa, data_value, forecast_value):
 	"""Calculates the exponential method"""
@@ -10,11 +12,11 @@ def calculate_method_exponential(alfa, data_value, forecast_value):
 
 class Croston_Based():
 
-	alfa, data, convergence_value, percentile = 0,0,0,0 ## class atributes
+	alfa, data, convergence_value, percentile = 0.1,0,100,10 ## class atributes
 	choosen_algorithm, alfa_condition = 'croston', 'fix' ##
 	bootstrap_call = False
 
-	def croston_main(alfa_condition, alfa, data, choosen_algorithm, bootstrap_call, convergence_value, percentile):
+	def croston_main(self, alfa_condition, alfa, data, choosen_algorithm, bootstrap_call, convergence_value, percentile):
 		"""Call and defines methods
 
 			alfa_condition: most be in a range of 0 to 1
@@ -34,7 +36,7 @@ class Croston_Based():
 		forecast_matriz = np.zeros(shape=data.shape, dtype=np.float64)
 		
 		for_initial_pass = 0
-		if choosen_algorithm.lower()==exponential:
+		if choosen_algorithm.lower() == 'exponential':
 			for_initial_pass = 1
 		
 		if bootstrap_call == True: ### instatiating boostrap object
@@ -46,7 +48,7 @@ class Croston_Based():
 			for j in range(for_initial_pass, len(i)): 
 				
 				if data[i][j] == 0:
-					if bootstrap_call == True and choosen_algorithm.lower() != 'exponential':
+					if bootstrap_call == True:
 						bootstrap_obj.bootstrap_main_init(row = data[i][0:j])
 					else:
 						if choosen_algorithm.lower() != 'exponential':
@@ -98,3 +100,7 @@ class Croston_Based():
 
 		return smaller_alfa
 
+if __name__ == '__main__':
+	
+	sis = Croston_Based()
+	sis.croston_main(0,0,0,0,0,0,0)
