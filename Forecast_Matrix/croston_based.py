@@ -2,8 +2,8 @@
 import sys
 import numpy as np
 import pandas as pd
-sys.path.insert(0, '..')
-import Bootstrap
+sys.path.append("..")
+from Bootstrap import bootstrap
 
 
 def calculate_method_exponential(alfa, data_value, forecast_value):
@@ -12,14 +12,15 @@ def calculate_method_exponential(alfa, data_value, forecast_value):
 
 class Croston_Based():
 
-	alfa, data, convergence_value, percentile = 0.1,0,100,10 ## class atributes
-	choosen_algorithm, alfa_condition = 'croston', 'fix' ##
+	alfa, convergence_value, percentile = 0.1,100,10 ## class atributes
+	choosen_algorithm, alfa_condition = 'croston', 'fix'
 	bootstrap_call = False
+	data = pd.DataFrame()
 
 	def croston_main(self, alfa_condition, alfa, data, choosen_algorithm, bootstrap_call, convergence_value, percentile):
 		"""Call and defines methods
-
-			alfa_condition: most be in a range of 0 to 1
+			alfa_condition: fix ou dynamic
+			alfa: most be in a range of 0 to 1
 			data: the data most be a pandas dataframe
 			choosen_algorithm: sba, croston or exponential
 			bootstrap_call: if true call boostrap, but does not work if exponential
@@ -100,7 +101,10 @@ class Croston_Based():
 
 		return smaller_alfa
 
+'''
 if __name__ == '__main__':
 	
 	sis = Croston_Based()
 	sis.croston_main(0,0,0,0,0,0,0)
+
+'''

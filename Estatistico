@@ -1,0 +1,18 @@
+A partir do erro, calcular:
+	- Número de Observações
+	- erro min
+	- erro max
+	- 1º quartil
+	- mediana
+	- 3º quartil
+	- média
+	- variância (n-1)
+	- Desvio Padrão (n-1)
+	- Alfas --> 0.1, 0.3, 0.5, 0.7, 1
+	- Bootstrap Percentis --> 10, 30, 50, 70, 1
+
+Calcular isso para: 
+	- Erro Mase, Erro Médio, Fill Rate, Taxa de Ruptura, Nível Médio de Estoque
+	- Para cada um dos códigos
+	- Conforme classificação da base
+	- Geral combinado

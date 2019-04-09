@@ -74,6 +74,7 @@ class Bootstrap():
 	'''Main bootstrap class, where is implemented all the necessary methods'''
 	row = 0
 	percentile_type = 'static'
+	
 	def __init__(self, convergence_value, number_threads):
 		'''Initialization method'''
 		random.seed()

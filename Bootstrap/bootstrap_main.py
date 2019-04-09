@@ -3,7 +3,7 @@ import time
 import pandas as pd
 import numpy as np
 
-import bootstrap
+from Bootstrap import bootstrap
 
 class BootstrapMainMethod(bootstrap.Bootstrap):
 	'''This class will be responsible for calling the bootstrap method in 
@@ -28,10 +28,10 @@ class BootstrapMainMethod(bootstrap.Bootstrap):
 					forecast_matrix[index_i][j-2], self.percentile = boot.bootstrap_main_init(i[1:j], 
 						self.percentile_type, self.percentile, i[j+1])
 				else:
-					forecast_matrix[index_i][j-2], self.percentile = boot.bootstrap_main_init(i[1:j], 
-						percentile_type = False, self.percentile, i[j+1]) ##in the last position I can calculate the best percentile
+					forecast_matrix[index_i][j-2], self.percentile = boot.bootstrap_main_init(row = i[1:j], 
+						percentile_type = False, percentile = self.percentile, last_value = i[j+1]) ##in the last position I can calculate the best percentile
 
-
+'''
 if __name__ == '__main__':
 	INICIO = time.time()
 	DATA = pd.read_table("demanda.txt", delimiter='\t')
@@ -39,4 +39,4 @@ if __name__ == '__main__':
 	SIS = BootstrapMainMethod(data=DATAconvergence_value=10, number_threads=0)
 	SIS.bootstrap_data_method_init()
 	FIM = time.time()
-	print(FIM-INICIO)
+	print(FIM-INICIO)'''

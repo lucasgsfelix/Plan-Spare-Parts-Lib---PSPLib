@@ -19,7 +19,7 @@ class Error():
 		# the last value is main predicted value for this reason, we don't have any value to compare it
 		self.real_values = real_values[1:]
 		# the first value can be remove cause I only can predict after the second value
-		if round_value is None or round_value == 0:
+		if round_value is None or round_value <= 0:
 			self.round_value = 3
 		else:
 			self.round_value = round_value
