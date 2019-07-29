@@ -1,24 +1,26 @@
 """This code is responsible to calculate the error in the forecast methods."""
 import math
-from operator import sub
 import numpy as np
+import statistics
 
 def simple_error(real_values, forecasted_values):
 	"""Simple dif error"""
-	return real_values-forecasted_values
+	return math.fabs(real_values-forecasted_values)
 
 class Error():
 	"""This class will be responsible to calculate the error of the forecast methods."""
 
-	def __init__(self, forecasted_values, real_values, round_value):
+	def __init__(self, forecasted_values, real_values, round_value = None):
 		"""Class constructor."""
 		if forecasted_values.size != real_values.size:
 			assert("The size of the list most be the same !")
 			exit()
-		self.forecasted_values = forecasted_values[:forecasted_values.size-1]
+		self.forecasted_values = forecasted_values.iloc[:forecasted_values.size-1]
 		# the last value is main predicted value for this reason, we don't have any value to compare it
-		self.real_values = real_values[1:]
+		self.real_values = real_values.iloc[1:]
 		# the first value can be remove cause I only can predict after the second value
+		self.forecasted_values  = self.forecasted_values.reset_index(drop = True)
+		self.real_values = self.real_values.reset_index(drop = True)
 		if round_value is None or round_value <= 0:
 			self.round_value = 3
 		else:
@@ -26,23 +28,37 @@ class Error():
 
 	def mase_error(self):
 		"""Mase Error."""
+		diff_real_forecasted = np.subtract(self.real_values, self.forecasted_values) # et
+		diff_real_forecasted = list(map(math.fabs, diff_real_forecasted)) # absolute values
+		#sum_values = np.sum(diff_real_forecasted)
 		diff_real_real = 0
-		for i in range(1, len(self.real_values)):
-			diff_real_real = diff_real_real + math.fabs(self.real_values[i]-self.real_values[i-1])
-		diff_real_forecasted = np.array(map(sub, self.real_values, self.forecasted_values))
-		diff_real_forecasted = np.array(map(math.fabs, diff_real_forecasted)) # absolute values
-		sum_values = np.sum(diff_real_forecasted)
+		aux = []
+		diff_aux = []
+		j=0
+		for k in range(0, len(self.real_values)):
+			diff_real_real = 0
+			j = k
+			for i in range(1, j+1):
+				diff_real_real+=math.fabs(self.real_values[i]-self.real_values[i-1])
 
-		aux_x = (diff_real_real/(real_values.size-1))
-		aux_y = (diff_real_forecasted)/(real_values.size-1)
-
-		return round((aux_y/(real_values.size-1)), self.round_value)
+			if j > 0:
+				diff_real_real = diff_real_real/(j)
+				try:
+					aux.append(diff_real_forecasted[k]/diff_real_real)
+				except:
+					aux.append(0)
+		
+		if len(aux) > 0:
+			aux = statistics.mean(aux)
+		else:
+			aux = 0
+		return aux
 
 	def absolute_mean_error(self):
 		"""Absolute Mean Error."""
-		diff = np.array(map(sub, self.real_values, self.forecasted_values))
-		diff = np.array(map(math.fabs, diff)) # absolute values
-		return round((np.sum(diff)/(self.real_values.size-1)), self.round_value)
+		diff = np.subtract(self.real_values, self.forecasted_values)
+		diff = list(map(math.fabs, diff)) # absolute values
+		return round((np.sum(diff)/(self.real_values.size)), self.round_value)
 
 	def percentage_error(self):
 		"""Percentage error. This error doesn't consider zeros."""
@@ -50,18 +66,21 @@ class Error():
 		for index, i in enumerate(self.real_values):
 			if i != 0:
 				sum_values = (((i-self.forecasted_values[index])/i)*100)+sum_values
+
+		if self.real_values[self.real_values!=0].size == 0:
+			return 0
 		return round(sum_values/self.real_values[self.real_values!=0].size,self.round_value) ### removing the zero values
 
 	def mean_error(self):
 		"""Mean Error."""
-		diff = np.array(map(sub, self.real_values, self.forecasted_values))
-		return round((np.sum(diff)/real_values.size-1), self.round_value)
+		diff = np.subtract(self.real_values, self.forecasted_values)
+		return round((np.sum(diff)/self.real_values.size), self.round_value)
 
 	def quadratic_mean_error(self):
 		"""Quadratic Mean Error."""
-		diff = np.array(list(map(sub, self.real_values, self.forecasted_values)))
+		diff = np.subtract(self.real_values, self.forecasted_values)
 		quadratic_values = [x**2 for x in diff]
-		return round(np.sum(quadratic_values)/(self.real_values.size-1), self.round_value)
+		return round(np.sum(quadratic_values)/(self.real_values.size), self.round_value)
 
 	def mean_squared_error(self):
 		"""Mean Squared Error."""
@@ -70,10 +89,12 @@ class Error():
 	def absolute_percentage_error(self):
 		"""Absolute Percentage Error."""
 		sum_values = 0
+		cont = 0
 		for index, i in enumerate(self.real_values):
 			if i!=0:
 				sum_values = math.fabs((((i-self.forecasted_values[index])/i)*100))+sum_values
-		return round(sum_values/(self.real_values.size-1), self.round_value)
+				cont+=1
+		return round(sum_values/(self.real_values.size), self.round_value)
 
 ''' 
 if __name__ == '__main__':

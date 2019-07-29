@@ -57,8 +57,10 @@ def probability_matrix_calc(transition_array):
 
 def transition_calc(transition_bool_array, probability_matrix):
 	'''Calculates the transition boolean value'''
-	if transition_bool_array.size <= 2:
-		return transition_bool_array[random.randint(0, transition_bool_array.size-1)]
+	if len(transition_bool_array) == 0:
+		return 0
+	elif transition_bool_array.size <= 2:
+		return transition_bool_array[0]
 	aux_sum = np.sum(transition_bool_array) ## using this approach I avoid recalculation
 	if aux_sum == 0:
 		return 0
@@ -74,15 +76,17 @@ class Bootstrap():
 	'''Main bootstrap class, where is implemented all the necessary methods'''
 	row = 0
 	percentile_type = 'static'
-	
-	def __init__(self, convergence_value, number_threads):
+	convergence_value =  100
+	percentile = 10
+	def __init__(self, percentile = None, convergence_value = None, number_threads = None):
 		'''Initialization method'''
 		random.seed()
-		self.convergence_value = convergence_value
+		self.percentile = percentile or self.percentile
+		self.convergence_value = 100 or convergence_value
 		self.number_threads = number_threads
 
 
-	def bootstrap_main_init(self, row, percentile_type, percentile, last_value):
+	def bootstrap_main_init(self, row, percentile_type = None, percentile = None, last_value = None):
 
 		''' This function will be responsible to initialize the bootstrap method calling it
 			will return the value of forecast value given a percentile and the percentile
@@ -91,11 +95,16 @@ class Bootstrap():
 		'''
 		self.percentile_type = percentile_type
 		self.row = row
-		self.percentile = percentile
+		self.percentile = percentile or self.percentile
+
+		if len(row) == 1:
+			return row[0], 0
+
 		if str(type(row)) != "<class 'numpy.ndarray'>": ## casting the value
 			self.row = np.array(row)
 		forecasted_values = np.zeros(self.convergence_value)
 		if self.number_threads == 0 or self.number_threads is None:
+
 			forecasted_values = list(map(self.bootstrap_method, range(self.convergence_value)))
 			forecasted_values = np.array(forecasted_values)
 		else: ### is not working right
@@ -103,26 +112,25 @@ class Bootstrap():
 			forecasted_values = pool.map(self.bootstrap_method, range(self.convergence_value))
 			pool.close()
 		forecasted_values = np.sort(forecasted_values)
-		percentile_position = self.percentile_calc(forecasted_values.size) ## this part is not working right
-
-		if percentile_type == 'static':		
+		percentile_position = self.percentile_calc(forecasted_values.size, self.percentile) ## this part is not working right
+		if percentile_type == 'static' or last_value is None:		
 			return forecasted_values[percentile_position], self.percentile
 		else:# is dynamic
-			best_percentile = self.best_percentile_calc(forecasted_values, last_value)
+			best_percentile = self.best_percentile_calc(forecasted_values, last_value, self.percentile)
 			return forecasted_values[percentile_position], best_percentile
 
 
 
 
-	def best_percentile_calc(self, forecasted_values, last_value):
+	def best_percentile_calc(self, forecasted_values, last_value, percentile):
 		"""Calculing the best percentile position for the next round, dynamic percentile type"""
-		self.percentile, best_last_value, percentile_position_best = 0, 0, 0
+		percentile, best_last_value, percentile_position_best = 0, 0, 0
 		
 		while(percentile<=100):
-			percentile_position = self.percentile_calc(forecasted_values.size)
+			percentile_position = self.percentile_calc(forecasted_values.size, percentile)
 			best_value = math.fabs(last_value - forecasted_values[percentile_position])
 			
-			if self.percentile == 0:
+			if percentile == 0:
 				best_last_value = best_value
 			else:
 				if best_last_value > best_value:
@@ -131,13 +139,13 @@ class Bootstrap():
 					if best_value == 0: # the first best percentile
 						break
 
-			self.percentile = self.percentile + 10
+			percentile = percentile + 10
 
 		return percentile_position_best
 
-	def percentile_calc(self, size_of_array):
+	def percentile_calc(self, size_of_array, percentile):
 		'''Responsible to return the position in a array of a giver percentile'''
-		return int((self.percentile * (size_of_array+1))/100)
+		return int((percentile * size_of_array)/100)-1
 
 	def bootstrap_method(self, arg_void):
 		'''This is were the method begins'''

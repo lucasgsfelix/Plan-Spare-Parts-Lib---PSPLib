@@ -22,15 +22,18 @@ class BootstrapMainMethod(bootstrap.Bootstrap):
 		''' This method is responsible for calling and instatiating the the class Bootstrap '''
 		boot = bootstrap.Bootstrap(convergence_value=self.convergence_value, number_threads=0)
 		forecast_matrix = np.empty(shape=self.data.shape, dtype=np.float64)
+
 		for index_i, i in enumerate(self.data.itertuples()): ### will iterate over each row
 			for j in range(2, len(i)+1): ### pandas has his index, this way force me to initiate the cont in 2
-				if j < len(i)+1:
+				if j < len(i)-2:
 					forecast_matrix[index_i][j-2], self.percentile = boot.bootstrap_main_init(i[1:j], 
 						self.percentile_type, self.percentile, i[j+1])
 				else:
 					forecast_matrix[index_i][j-2], self.percentile = boot.bootstrap_main_init(row = i[1:j], 
-						percentile_type = False, percentile = self.percentile, last_value = i[j+1]) ##in the last position I can calculate the best percentile
+						percentile_type = False, percentile = self.percentile, last_value = i[j-1]) 
+					##in the last position I can calculate the best percentile
 
+		return forecast_matrix
 '''
 if __name__ == '__main__':
 	INICIO = time.time()
