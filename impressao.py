@@ -34,7 +34,7 @@ def print_error(df, forecast_matrix, file_name):
 
 
 
-	edf.to_csv("Saida/"+file_name, sep = '\t', index = False)
+	edf.to_csv("Saida/"+file_name, sep = '\t', index = True)
 
 def print_indicadores(df, for_matrix, estoque, preco, file_name):
 
